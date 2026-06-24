@@ -1,0 +1,205 @@
+INFORME DEL PROYECTO
+SISTEMA DE GESTIÓN DE TALLER MECÁNICO AUTOFIX
+
+1. INTRODUCCIÓN
+El presente proyecto consiste en el diseño e implementación de una base de datos para el taller mecánico "AutoFix", utilizando Oracle SQL Developer. El objetivo principal es automatizar el registro y control de clientes, vehículos, servicios, repuestos y órdenes de servicio, permitiendo una gestión eficiente de las operaciones del taller.
+La base de datos fue desarrollada siguiendo las etapas del diseño de bases de datos: análisis de requisitos, diseño conceptual, diseño lógico, diseño físico, implementación, pruebas y mantenimiento.
+
+2. OBJETIVOS
+Objetivo General
+Diseñar e implementar una base de datos relacional que permita gestionar eficientemente las operaciones del taller mecánico AutoFix.
+Objetivos Específicos
+Registrar clientes y vehículos.
+Gestionar órdenes de servicio.
+Controlar el stock de repuestos.
+Administrar servicios mecánicos.
+Generar reportes mediante vistas y procedimientos almacenados.
+Optimizar consultas mediante índices.
+Validar reglas del negocio utilizando procedimientos y cursores.
+
+3. DESCRIPCIÓN DE LAS TABLAS
+Tabla CLIENTE
+Almacena la información de los clientes del taller.
+Campos:
+id_cliente: identificador único.
+nombres: nombres del cliente.
+apellidos: apellidos del cliente.
+telefono: número telefónico.
+direccion: dirección domiciliaria.
+
+Tabla VEHICULO
+Almacena los vehículos registrados.
+Campos:
+id_vehiculo
+placa
+marca
+modelo
+id_cliente
+Relación:
+Cada vehículo pertenece a un cliente.
+
+Tabla MECANICO
+Registra los mecánicos del taller.
+Campos:
+id_mecanico
+nombres
+especialidad
+
+Tabla SERVICIO
+Contiene el catálogo de servicios.
+Campos:
+id_servicio
+nombre
+precio
+
+Tabla REPUESTO
+Contiene los repuestos utilizados.
+Campos:
+id_repuesto
+nombre
+precio
+stock
+stock_minimo
+
+Tabla ORDEN_SERVICIO
+Representa la cabecera de cada orden de trabajo.
+Campos:
+id_orden
+id_vehiculo
+id_mecanico
+fecha_ingreso: fecha en que el vehículo ingresó al taller.
+fecha_cierre: fecha en que se cerró y cobró la orden (NULL mientras está abierta).
+estado: valor 'ABIERTA' o 'CERRADA'.
+
+Tabla DETALLE_SERVICIO
+Contiene los servicios realizados en cada orden.
+Campos:
+id_detalle_servicio
+id_orden
+id_servicio
+subtotal
+
+Tabla DETALLE_REPUESTO
+Contiene los repuestos usados en cada orden.
+Campos:
+id_detalle_repuesto
+id_orden
+id_repuesto
+cantidad
+subtotal
+
+4. DESCRIPCIÓN DE LOS ÍNDICES
+Oracle no crea índices automáticamente para las claves foráneas, por lo que se definieron manualmente para optimizar las consultas más frecuentes del sistema.
+
+idx_cliente_apellidos
+Optimiza búsquedas de clientes por apellido.
+
+idx_vehiculo_cliente
+Optimiza la búsqueda de vehículos pertenecientes a un cliente.
+
+idx_orden_estado
+Mejora el rendimiento de consultas que filtran órdenes por estado (ABIERTA/CERRADA).
+
+idx_orden_vehiculo
+Optimiza la consulta del historial de órdenes de un vehículo.
+
+idx_orden_mecanico
+Optimiza la búsqueda de órdenes asignadas a un mecánico y el control del límite de órdenes abiertas.
+
+idx_detalle_servicio
+Optimiza consultas entre órdenes y servicios al calcular totales.
+
+idx_detalle_repuesto
+Optimiza el cálculo del total de repuestos por orden (consulta frecuente en sp_calcular_orden).
+
+idx_repuesto_nombre
+Optimiza búsquedas de repuestos por nombre en consultas de inventario.
+
+5. DESCRIPCIÓN DE LAS VISTAS
+v_ordenes_abiertas
+Muestra todas las órdenes en estado ABIERTA, incluyendo fecha de ingreso, placa, marca y modelo del vehículo, y nombre del mecánico asignado.
+
+v_repuestos_stock_bajo
+Muestra los repuestos cuyo stock actual es menor al stock mínimo, incluyendo la cantidad de unidades que falta para alcanzar el mínimo.
+
+v_clientes_frecuentes
+Muestra los clientes con 2 o más órdenes de servicio registradas, ordenados de mayor a menor cantidad de visitas.
+
+6. DESCRIPCIÓN DE LOS PROCEDIMIENTOS ALMACENADOS
+El sistema cuenta con 16 procedimientos almacenados. Los que devuelven conjuntos de datos utilizan un parámetro OUT de tipo SYS_REFCURSOR.
+
+sp_registrar_cliente
+Inserta un nuevo cliente y retorna el ID generado y un mensaje de confirmación.
+
+sp_registrar_vehiculo
+Registra un vehículo verificando previamente que el cliente exista. Controla placa duplicada mediante manejo de DUP_VAL_ON_INDEX.
+
+sp_abrir_orden
+Crea una nueva orden de servicio con un primer servicio incluido. Valida que existan el vehículo, el mecánico y el servicio. Aplica un límite de 3 órdenes abiertas por mecánico.
+
+sp_agregar_servicio
+Agrega un servicio adicional a una orden existente. Valida que la orden exista y esté en estado ABIERTA antes de insertar el detalle.
+
+sp_agregar_repuestos
+Agrega un repuesto a una orden verificando stock disponible. Usa SELECT FOR UPDATE para evitar problemas de concurrencia, descuenta el inventario y registra el precio histórico al momento del uso. Valida que la orden exista y esté ABIERTA.
+
+sp_calcular_orden
+Calcula el total de una orden sumando los subtotales de servicios y repuestos. Retorna -1 si la orden no existe.
+
+sp_cerrar_orden
+Valida que la orden exista y esté ABIERTA, calcula el total, registra la fecha de cierre y cambia el estado a CERRADA.
+
+sp_cierre_del_dia
+Calcula el total facturado en una fecha determinada sumando las órdenes cuya fecha_cierre corresponde a ese día. Utiliza cursor implícito con FOR.
+
+sp_validar_stock
+Verifica si hay stock suficiente de un repuesto para una cantidad solicitada. Retorna el stock actual y el estado DISPONIBLE, NO DISPONIBLE o REPUESTO NO EXISTE.
+
+sp_historial_vehiculo
+Devuelve mediante SYS_REFCURSOR el historial completo de órdenes de un vehículo, con fechas, mecánico asignado y total cobrado por cada orden. Retorna -1 si el vehículo no existe.
+
+sp_listar_reposicion
+Devuelve mediante SYS_REFCURSOR los repuestos con stock por debajo del mínimo, ordenados por urgencia (mayor déficit primero), con la cantidad de unidades a reponer.
+
+sp_reporte_servicios_top
+Devuelve mediante SYS_REFCURSOR el ranking de los N servicios más solicitados (parámetro p_limite, por defecto 10), mostrando veces solicitado e ingresos generados.
+
+sp_reporte_mecanicos
+Devuelve mediante SYS_REFCURSOR el desempeño de cada mecánico: especialidad, número de órdenes cerradas atendidas e ingresos generados.
+
+sp_actualizar_precios
+Aplica un porcentaje de ajuste al precio de todos los servicios del catálogo. Valida que el porcentaje esté entre -99 y 200 para evitar precios nulos, negativos o desproporcionados.
+
+sp_clientes_frecuentes
+Devuelve mediante SYS_REFCURSOR los clientes que superan un umbral mínimo de órdenes (parámetro p_min_ordenes, por defecto 2), ordenados de mayor a menor fidelidad.
+
+sp_consumo_repuestos
+Calcula el total de unidades de repuestos consumidas en todas las órdenes mediante una consulta directa con SUM, sin necesidad de cursor.
+
+7. USO DE CURSORES
+El sistema utiliza dos tipos de cursores según la necesidad de cada procedimiento:
+
+Cursores implícitos con FOR: utilizados cuando se necesita procesar fila por fila para acumular un resultado (sp_cierre_del_dia).
+
+SYS_REFCURSOR: utilizado como parámetro OUT en los procedimientos que devuelven conjuntos de datos al cliente (sp_historial_vehiculo, sp_listar_reposicion, sp_reporte_servicios_top, sp_reporte_mecanicos, sp_clientes_frecuentes). Permite retornar resultados tabulados sin necesidad de imprimir dentro del procedimiento.
+
+SELECT con funciones de agregación (SUM, COUNT): utilizado en procedimientos donde no se requiere procesamiento fila por fila, como sp_calcular_orden y sp_consumo_repuestos. Es más eficiente que un cursor para estos casos.
+
+8. PRUEBAS REALIZADAS
+Se realizaron pruebas para:
+Registro de clientes.
+Registro de vehículos.
+Apertura de órdenes.
+Adición de servicios adicionales a órdenes abiertas.
+Validación de stock.
+Cierre de órdenes.
+Reportes de servicios.
+Reportes de clientes.
+
+9. CONCLUSIONES
+Se implementó correctamente la base de datos relacional.
+Los procedimientos almacenados permitieron automatizar procesos y validar reglas del negocio (límite de órdenes por mecánico, control de stock, validación de estados).
+El uso de SYS_REFCURSOR permitió a los procedimientos de reporte devolver conjuntos de datos reales en lugar de simples conteos.
+Los índices mejoraron el rendimiento de las consultas más frecuentes del sistema.
+El campo fecha_cierre en la tabla ORDEN_SERVICIO permite un cálculo correcto del cierre del día, diferenciando la fecha de ingreso de la fecha de finalización del trabajo.
+Oracle SQL Developer permitió gestionar eficientemente toda la solución.
