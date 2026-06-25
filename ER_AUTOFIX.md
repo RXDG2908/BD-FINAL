@@ -13,7 +13,7 @@ erDiagram
 
     VEHICULO {
         number id_vehiculo PK
-        varchar placa
+        varchar placa UK
         varchar marca
         varchar modelo
         number id_cliente FK
