@@ -1,5 +1,5 @@
 # BD-FINAL — Sistema de Gestión de Taller Mecánico AUTOFIX
-Base de datos relacional desarrollada en **Oracle SQL Developer** para la gestión de clientes, vehículos, servicios, repuestos y órdenes de trabajo de un taller mecánico.
+Base de datos relacional desarrollada en **Oracle SQL Developer** para la gestión de clientes, vehículos, servicios, repuestos, compras, facturación y agenda de un taller mecánico.
 
 ---
 
@@ -8,44 +8,54 @@ Base de datos relacional desarrollada en **Oracle SQL Developer** para la gesti�
 | Archivo | Contenido |
 |---|---|
 | `01_eliminar_tablas.sql` | Drop de tablas y secuencias (reset completo) |
-| `02_secuencias.sql` | Secuencias para IDs autoincrementales |
-| `03_tablas.sql` | Definición de las 8 tablas del esquema |
-| `04_indices.sql` | 8 índices para optimizar consultas |
-| `05_vistas.sql` | 3 vistas de consulta rápida |
+| `02_secuencias.sql` | 15 secuencias para IDs autoincrementales |
+| `03_tablas.sql` | Definición de las 15 tablas del esquema |
+| `04_indices.sql` | 16 índices para optimizar consultas |
+| `05_vistas.sql` | 5 vistas de consulta rápida |
 | `06_inserts.sql` | Datos de prueba (15 clientes, 20 vehículos, 6 mecánicos…) |
 | `07_procedimientos.sql` | 16 procedimientos almacenados |
-| `base de datos AUTOFIX.txt` | Informe del proyecto |
 
 ---
 
-## Esquema de tablas
+## Esquema de tablas (15)
 
 ```
-cliente ──< vehiculo ──< orden_servicio ──< detalle_servicio >── servicio
-                                      └──< detalle_repuesto  >── repuesto
-mecanico ──< orden_servicio
+cargo ──< mecanico ──< orden_servicio ──< detalle_servicio >── servicio
+                  └──< orden_servicio ──< detalle_repuesto >── repuesto
+cliente ──< vehiculo ──< orden_servicio ──< factura ──< pago
+                   └──< cita >── cliente
+proveedor ──< compra ──< detalle_compra >── repuesto
 ```
 
-| Tabla | Descripción |
-|---|---|
-| `cliente` | Datos del cliente (nombre, teléfono, dirección) |
-| `vehiculo` | Vehículos registrados, vinculados a un cliente |
-| `mecanico` | Mecánicos del taller con especialidad |
-| `servicio` | Catálogo de servicios con precio |
-| `repuesto` | Inventario de repuestos con stock mínimo |
-| `orden_servicio` | Cabecera de cada orden (fecha ingreso, fecha cierre, estado) |
-| `detalle_servicio` | Servicios aplicados a una orden |
-| `detalle_repuesto` | Repuestos utilizados en una orden |
+| # | Tabla | Descripción |
+|---|---|---|
+| 1 | `cargo` | Cargos laborales: Junior, Senior, Especialista, Jefe de Taller |
+| 2 | `cliente` | Datos del cliente (nombre, teléfono, dirección) |
+| 3 | `mecanico` | Mecánicos con especialidad y cargo asignado |
+| 4 | `servicio` | Catálogo de servicios con precio |
+| 5 | `repuesto` | Inventario de repuestos con stock mínimo |
+| 6 | `vehiculo` | Vehículos registrados, vinculados a un cliente |
+| 7 | `proveedor` | Empresas que suministran los repuestos |
+| 8 | `compra` | Órdenes de compra emitidas a proveedores |
+| 9 | `detalle_compra` | Líneas de cada orden de compra |
+| 10 | `orden_servicio` | Cabecera de cada orden (fecha ingreso, fecha cierre, estado) |
+| 11 | `detalle_servicio` | Servicios aplicados a una orden |
+| 12 | `detalle_repuesto` | Repuestos utilizados en una orden |
+| 13 | `factura` | Documento fiscal emitido al cerrar una orden (incluye IGV) |
+| 14 | `pago` | Pagos registrados contra una factura (admite abonos) |
+| 15 | `cita` | Agenda de turnos solicitados por el cliente |
 
 ---
 
-## Vistas
+## Vistas (5)
 
 | Vista | Descripción |
 |---|---|
 | `v_ordenes_abiertas` | Órdenes activas con vehículo y mecánico asignado |
 | `v_repuestos_stock_bajo` | Repuestos por debajo del stock mínimo |
 | `v_clientes_frecuentes` | Clientes con 2 o más órdenes de servicio |
+| `v_citas_pendientes` | Agenda de citas próximas (PENDIENTE o CONFIRMADA) |
+| `v_facturas_por_cobrar` | Facturas con saldo pendiente de pago |
 
 ---
 
