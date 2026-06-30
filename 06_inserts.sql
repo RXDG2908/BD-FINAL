@@ -5,7 +5,9 @@
      2.  clientes       (sin dependencias)
      3.  mecanicos      (depende de cargo)
      4.  servicios      (sin dependencias)
-     5.  repuestos      (sin dependencias)
+     5.  repuestos      (stock = valor INICIAL, antes de aplicar
+                         compras ni ordenes; los UPDATEs al final
+                         de este script dejan el stock consistente)
      6.  vehiculos      (depende de cliente)
      7.  proveedores    (sin dependencias)
      8.  compras        (depende de proveedor)
@@ -16,16 +18,17 @@
     13.  facturas       (depende de orden)
     14.  pagos          (depende de factura)
     15.  citas          (depende de cliente y vehiculo)
+    --  UPDATEs finales: ajustan stock aplicando compras y ordenes
    ========================================================= */
 
 /* =========================================================
    CARGOS
    ========================================================= */
 
-INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Mecanico Junior', 'Mantenimiento basico y asistencia');
-INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Mecanico Senior', 'Reparaciones de media complejidad');
-INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Especialista',    'Diagnostico y reparacion avanzada');
-INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Jefe de Taller',  'Supervision y coordinacion del equipo');
+INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Mecanico Junior','Mantenimiento basico y asistencia');
+INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Mecanico Senior','Reparaciones de media complejidad');
+INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Especialista',   'Diagnostico y reparacion avanzada');
+INSERT INTO cargo VALUES(seq_cargo.NEXTVAL,'Jefe de Taller', 'Supervision y coordinacion del equipo');
 
 /* =========================================================
    CLIENTES
@@ -81,27 +84,57 @@ INSERT INTO servicio VALUES(seq_servicio.NEXTVAL,'Diagnostico general',       13
 
 /* =========================================================
    REPUESTOS
-   Columnas: id, nombre, precio_unitario, stock_actual, stock_minimo
+   Columnas: id, nombre, precio_unitario, stock_INICIAL, stock_minimo
+
+   IMPORTANTE: el stock aqui es el valor ANTES de registrar
+   compras y ordenes. Al final de este script se ejecutan dos
+   UPDATE que aplican las entradas (detalle_compra) y las
+   salidas (detalle_repuesto), dejando el stock en su valor
+   real actual.
+
+   Stock final esperado despues de los UPDATEs:
+   (valores marcados con * quedan por debajo del stock minimo)
+    1 Filtro aceite       : 10 +10(compra) -2(uso) = 18
+    2 Bujia               : 30 +20(compra) -4(uso) = 46
+    3 Pastillas freno     :  7  +8(compra) -1(uso) = 14
+    4 Disco freno         :  8  +0(compra) -2(uso) =  6
+    5 Amortiguador        :  5  +5(compra) -1(uso) =  9
+    6 Bateria             :  3  +4(compra) -1(uso) =  6
+    7 Filtro aire         : 10 +15(compra) -2(uso) = 23
+    8 Filtro gasolina     : 18  +0(compra) -1(uso) = 17
+    9 Aceite sintetico    : 40  +0(compra) -3(uso) = 37
+   10 Radiador            :  2  +0(compra) -1(uso) =  1  * min=2
+   11 Faro delantero      : 12  +0(compra) -2(uso) = 10
+   12 Parachoque          :  6  +0(compra) -1(uso) =  5
+   13 Espejo lateral      : 14  +0(compra) -2(uso) = 12
+   14 Llanta aro 16       :  9  +0(compra) -1(uso) =  8
+   15 Llanta aro 17       :  7  +0(compra) -1(uso) =  6
+   16 Correa distribucion : 11  +0(compra) -1(uso) = 10
+   17 Alternador          :  1  +0(compra) -1(uso) =  0  * min=1
+   18 Motor arranque      :  1  +0(compra) -1(uso) =  0  * min=1
+   19 Sensor oxigeno      : 13  +0(compra) -2(uso) = 11
+   20 Termostato          : 16  +0(compra) -3(uso) = 13
+   21-25 sin movimiento: stock final = stock inicial
    ========================================================= */
 
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Filtro aceite',       35,  20, 5);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Bujia',               15,  50,10);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Pastillas freno',    120,  15, 5);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Filtro aceite',       35,  10, 5);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Bujia',               15,  30,10);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Pastillas freno',    120,   7, 5);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Disco freno',        200,   8, 3);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Amortiguador',       350,  10, 2);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Bateria',            450,   7, 2);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Filtro aire',         40,  25, 5);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Amortiguador',       350,   5, 2);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Bateria',            450,   3, 2);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Filtro aire',         40,  10, 5);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Filtro gasolina',     60,  18, 4);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Aceite sintetico',    90,  40,10);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Radiador',           700,   5, 2);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Radiador',           700,   2, 2);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Faro delantero',     250,  12, 3);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Parachoque',         500,   6, 2);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Espejo lateral',     120,  14, 4);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Llanta aro 16',      420,   9, 3);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Llanta aro 17',      520,   7, 2);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Correa distribucion', 280, 11, 3);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Alternador',         650,   4, 1);
-INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Motor arranque',     750,   3, 1);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Alternador',         650,   1, 1);
+INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Motor arranque',     750,   1, 1);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Sensor oxigeno',     180,  13, 4);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Termostato',          95,  16, 5);
 INSERT INTO repuesto VALUES(seq_repuesto.NEXTVAL,'Compresora aire',    900,   2, 1);
@@ -146,10 +179,14 @@ INSERT INTO proveedor VALUES(seq_proveedor.NEXTVAL,'MotorParts SAC',  '987654323
 /* =========================================================
    COMPRAS  (ordenes de compra a proveedores)
    Columnas: id_compra, id_proveedor, fecha_compra, total
+   total = suma de (cantidad * precio_unitario) del detalle
    ========================================================= */
 
+-- Compra 1: Repuestos Lima  | Filtro aceite 10u + Bujia 20u = 650.00
 INSERT INTO compra VALUES(seq_compra.NEXTVAL, 1, SYSDATE-30,   650.00);
+-- Compra 2: AutoPartes Peru | Pastillas freno 8u + Amortiguador 5u = 2710.00
 INSERT INTO compra VALUES(seq_compra.NEXTVAL, 2, SYSDATE-20,  2710.00);
+-- Compra 3: Repuestos Lima  | Bateria 4u + Filtro aire 15u = 2400.00
 INSERT INTO compra VALUES(seq_compra.NEXTVAL, 1, SYSDATE-10,  2400.00);
 
 /* =========================================================
@@ -157,15 +194,15 @@ INSERT INTO compra VALUES(seq_compra.NEXTVAL, 1, SYSDATE-10,  2400.00);
    Columnas: id_detalle, id_compra, id_repuesto, cantidad, precio_unitario
    ========================================================= */
 
--- Compra 1  |  Filtro aceite (35) x 10 = 350  |  Bujia (15) x 20 = 300
+-- Compra 1 | Filtro aceite (35) x 10 = 350  | Bujia (15) x 20 = 300
 INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 1,  1, 10,  35.00);
 INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 1,  2, 20,  15.00);
 
--- Compra 2  |  Pastillas freno (120) x 8 = 960  |  Amortiguador (350) x 5 = 1750
+-- Compra 2 | Pastillas freno (120) x 8 = 960  | Amortiguador (350) x 5 = 1750
 INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 2,  3,  8, 120.00);
 INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 2,  5,  5, 350.00);
 
--- Compra 3  |  Bateria (450) x 4 = 1800  |  Filtro aire (40) x 15 = 600
+-- Compra 3 | Bateria (450) x 4 = 1800  | Filtro aire (40) x 15 = 600
 INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 3,  6,  4, 450.00);
 INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 3,  7, 15,  40.00);
 
@@ -173,8 +210,6 @@ INSERT INTO detalle_compra VALUES(seq_detalle_compra.NEXTVAL, 3,  7, 15,  40.00)
    ORDENES DE SERVICIO
    Columnas: id_orden, id_vehiculo, id_mecanico,
              fecha_ingreso, fecha_cierre, estado
-   Las ordenes CERRADAS tienen fecha_cierre = fecha_ingreso + 2 dias.
-   Las ordenes ABIERTAS tienen fecha_cierre = NULL.
    ========================================================= */
 
 INSERT INTO orden_servicio(id_orden,id_vehiculo,id_mecanico,fecha_ingreso,fecha_cierre,estado)
@@ -240,8 +275,7 @@ VALUES(seq_orden.NEXTVAL,20, 2, SYSDATE-1,  NULL,       'ABIERTA');
 /* =========================================================
    DETALLE SERVICIO
    Columnas: id_detalle, id_orden, id_servicio, subtotal
-   El subtotal coincide con el precio de catalogo del servicio
-   al momento de registrar la orden.
+   El subtotal = precio de catalogo al momento de la orden.
    ========================================================= */
 
 INSERT INTO detalle_servicio VALUES(seq_detalle_servicio.NEXTVAL, 1, 1,  120);
@@ -271,45 +305,45 @@ INSERT INTO detalle_servicio VALUES(seq_detalle_servicio.NEXTVAL,20, 5,   50);
    Subtotal = precio_unitario * cantidad
    ========================================================= */
 
--- Orden  1  | Filtro aceite   (35)  x 2 = 70
+-- Orden  1 | Filtro aceite   ( 35) x 2 =   70
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 1,  1, 2,   70);
--- Orden  2  | Bujia           (15)  x 4 = 60
+-- Orden  2 | Bujia           ( 15) x 4 =   60
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 2,  2, 4,   60);
--- Orden  3  | Pastillas freno(120)  x 1 = 120
+-- Orden  3 | Pastillas freno (120) x 1 =  120
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 3,  3, 1,  120);
--- Orden  4  | Disco freno    (200)  x 2 = 400
+-- Orden  4 | Disco freno     (200) x 2 =  400
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 4,  4, 2,  400);
--- Orden  5  | Amortiguador   (350)  x 1 = 350
+-- Orden  5 | Amortiguador    (350) x 1 =  350
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 5,  5, 1,  350);
--- Orden  6  | Bateria        (450)  x 1 = 450
+-- Orden  6 | Bateria         (450) x 1 =  450
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 6,  6, 1,  450);
--- Orden  7  | Filtro aire     (40)  x 2 = 80
+-- Orden  7 | Filtro aire     ( 40) x 2 =   80
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 7,  7, 2,   80);
--- Orden  8  | Filtro gasolina (60)  x 1 = 60
+-- Orden  8 | Filtro gasolina ( 60) x 1 =   60
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 8,  8, 1,   60);
--- Orden  9  | Aceite sint.    (90)  x 3 = 270
+-- Orden  9 | Aceite sint.    ( 90) x 3 =  270
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL, 9,  9, 3,  270);
--- Orden 10  | Radiador       (700)  x 1 = 700
+-- Orden 10 | Radiador        (700) x 1 =  700
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,10, 10, 1,  700);
--- Orden 11  | Faro delantero (250)  x 2 = 500
+-- Orden 11 | Faro delantero  (250) x 2 =  500
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,11, 11, 2,  500);
--- Orden 12  | Parachoque     (500)  x 1 = 500
+-- Orden 12 | Parachoque      (500) x 1 =  500
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,12, 12, 1,  500);
--- Orden 13  | Espejo lateral (120)  x 2 = 240
+-- Orden 13 | Espejo lateral  (120) x 2 =  240
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,13, 13, 2,  240);
--- Orden 14  | Llanta aro 16  (420)  x 1 = 420
+-- Orden 14 | Llanta aro 16   (420) x 1 =  420
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,14, 14, 1,  420);
--- Orden 15  | Llanta aro 17  (520)  x 1 = 520
+-- Orden 15 | Llanta aro 17   (520) x 1 =  520
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,15, 15, 1,  520);
--- Orden 16  | Correa dist.   (280)  x 1 = 280
+-- Orden 16 | Correa dist.    (280) x 1 =  280
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,16, 16, 1,  280);
--- Orden 17  | Alternador     (650)  x 1 = 650
+-- Orden 17 | Alternador      (650) x 1 =  650  (deja stock en 0, bajo el minimo)
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,17, 17, 1,  650);
--- Orden 18  | Motor arranque (750)  x 1 = 750
+-- Orden 18 | Motor arranque  (750) x 1 =  750  (deja stock en 0, bajo el minimo)
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,18, 18, 1,  750);
--- Orden 19  | Sensor oxigeno (180)  x 2 = 360
+-- Orden 19 | Sensor oxigeno  (180) x 2 =  360
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,19, 19, 2,  360);
--- Orden 20  | Termostato      (95)  x 3 = 285
+-- Orden 20 | Termostato      ( 95) x 3 =  285
 INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,20, 20, 3,  285);
 
 /* =========================================================
@@ -318,57 +352,93 @@ INSERT INTO detalle_repuesto VALUES(seq_detalle_repuesto.NEXTVAL,20, 20, 3,  285
              fecha_emision, subtotal, igv (18%), total
    ========================================================= */
 
--- Orden 1:  servicio 120 + repuesto  70 = 190 | igv 34.20 | total 224.20
+-- Orden 1:  120 + 70  = 190  | igv = 190*0.18 = 34.20  | total = 224.20
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 1,'F001-00001',SYSDATE-18,  190.00,  34.20,  224.20);
--- Orden 2:  80 + 60  = 140 | igv 25.20 | total 165.20
+-- Orden 2:   80 + 60  = 140  | igv = 25.20  | total = 165.20
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 2,'F001-00002',SYSDATE-17,  140.00,  25.20,  165.20);
--- Orden 3:  70 + 120 = 190 | igv 34.20 | total 224.20
+-- Orden 3:   70 + 120 = 190  | igv = 34.20  | total = 224.20
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 3,'F001-00003',SYSDATE-16,  190.00,  34.20,  224.20);
--- Orden 4:  250 + 400 = 650 | igv 117.00 | total 767.00
+-- Orden 4:  250 + 400 = 650  | igv = 117.00 | total = 767.00
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 4,'F001-00004',SYSDATE-15,  650.00, 117.00,  767.00);
--- Orden 5:  50 + 350 = 400 | igv 72.00 | total 472.00
+-- Orden 5:   50 + 350 = 400  | igv = 72.00  | total = 472.00
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 5,'F001-00005',SYSDATE-14,  400.00,  72.00,  472.00);
--- Orden 6:  300 + 450 = 750 | igv 135.00 | total 885.00
+-- Orden 6:  300 + 450 = 750  | igv = 135.00 | total = 885.00
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 6,'F001-00006',SYSDATE-13,  750.00, 135.00,  885.00);
--- Orden 9:  400 + 270 = 670 | igv 120.60 | total 790.60
+-- Orden 9:  400 + 270 = 670  | igv = 120.60 | total = 790.60
 INSERT INTO factura VALUES(seq_factura.NEXTVAL, 9,'F001-00007',SYSDATE-10,  670.00, 120.60,  790.60);
--- Orden 10: 500 + 700 = 1200 | igv 216.00 | total 1416.00
+-- Orden 10: 500 + 700 = 1200 | igv = 216.00 | total = 1416.00
 INSERT INTO factura VALUES(seq_factura.NEXTVAL,10,'F001-00008',SYSDATE-9,  1200.00, 216.00, 1416.00);
--- Orden 11: 2500 + 500 = 3000 | igv 540.00 | total 3540.00
+-- Orden 11: 2500 + 500 = 3000| igv = 540.00 | total = 3540.00
 INSERT INTO factura VALUES(seq_factura.NEXTVAL,11,'F001-00009',SYSDATE-8,  3000.00, 540.00, 3540.00);
--- Orden 13: 220 + 240 = 460 | igv 82.80 | total 542.80
+-- Orden 13: 220 + 240 = 460  | igv = 82.80  | total = 542.80
 INSERT INTO factura VALUES(seq_factura.NEXTVAL,13,'F001-00010',SYSDATE-6,   460.00,  82.80,  542.80);
 
 /* =========================================================
    PAGOS
    Columnas: id_pago, id_factura, fecha_pago, monto, metodo_pago
-   Metodos validos: EFECTIVO, TARJETA, TRANSFERENCIA
-   Factura 4 se paga en dos abonos para mostrar pagos parciales.
+
+   Escenarios demostrados:
+   - Facturas 1,2,3,5,6,7,8 : pago unico = total factura (saldadas)
+   - Factura 4              : dos cuotas que suman el total (saldada en dos pagos)
+   - Factura 9              : pago parcial (saldo pendiente de 1540.00)
+   - Factura 10             : sin ningun pago (saldo pendiente de 542.80)
+
+   v_facturas_por_cobrar devuelve las facturas 9 y 10.
    ========================================================= */
 
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 1, SYSDATE-18,  224.20,'EFECTIVO');
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 2, SYSDATE-17,  165.20,'TARJETA');
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 3, SYSDATE-16,  224.20,'EFECTIVO');
-INSERT INTO pago VALUES(seq_pago.NEXTVAL, 4, SYSDATE-15,  400.00,'TARJETA');       -- abono parcial
-INSERT INTO pago VALUES(seq_pago.NEXTVAL, 4, SYSDATE-14,  367.00,'EFECTIVO');      -- saldo restante
+INSERT INTO pago VALUES(seq_pago.NEXTVAL, 4, SYSDATE-15,  400.00,'TARJETA');       -- primera cuota
+INSERT INTO pago VALUES(seq_pago.NEXTVAL, 4, SYSDATE-14,  367.00,'EFECTIVO');      -- segunda cuota (total cubierto: 767.00)
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 5, SYSDATE-14,  472.00,'TRANSFERENCIA');
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 6, SYSDATE-13,  885.00,'TARJETA');
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 7, SYSDATE-10,  790.60,'EFECTIVO');
 INSERT INTO pago VALUES(seq_pago.NEXTVAL, 8, SYSDATE-9,  1416.00,'TARJETA');
-INSERT INTO pago VALUES(seq_pago.NEXTVAL, 9, SYSDATE-8,  3540.00,'TRANSFERENCIA');
+INSERT INTO pago VALUES(seq_pago.NEXTVAL, 9, SYSDATE-8,  2000.00,'TRANSFERENCIA'); -- pago parcial; saldo = 1540.00
+-- Factura 10: sin registro de pago (saldo pendiente = 542.80)
 
 /* =========================================================
    CITAS  (agenda de turnos)
    Columnas: id_cita, id_cliente, id_vehiculo,
              fecha_cita, motivo, estado
-   Estados validos: PENDIENTE, CONFIRMADA, CANCELADA
+   Restriccion: el vehiculo debe pertenecer al cliente indicado.
    ========================================================= */
 
+-- cliente 1 (Jose Perez)    -> vehiculo 1 (Toyota Corolla ABC101) ✓
 INSERT INTO cita VALUES(seq_cita.NEXTVAL, 1,  1, SYSDATE+1,'Cambio de aceite',   'CONFIRMADA');
+-- cliente 2 (Carlos Rojas)  -> vehiculo 3 (Hyundai Accent ABC103) ✓
 INSERT INTO cita VALUES(seq_cita.NEXTVAL, 2,  3, SYSDATE+2,'Revision de frenos', 'PENDIENTE');
+-- cliente 3 (Luis Diaz)     -> vehiculo 5 (Mazda 3 ABC105) ✓
 INSERT INTO cita VALUES(seq_cita.NEXTVAL, 3,  5, SYSDATE+3,'Alineamiento',       'CONFIRMADA');
+-- cliente 4 (Pedro Lopez)   -> vehiculo 6 (Chevrolet Spark ABC106) ✓
 INSERT INTO cita VALUES(seq_cita.NEXTVAL, 4,  6, SYSDATE+1,'Diagnostico general','PENDIENTE');
+-- cliente 5 (Miguel Vargas) -> vehiculo 7 (Suzuki Swift ABC107) ✓
 INSERT INTO cita VALUES(seq_cita.NEXTVAL, 5,  7, SYSDATE+5,'Cambio de llantas',  'CONFIRMADA');
+-- cliente 6 (Jorge Ramirez) -> vehiculo 8 (Toyota Yaris ABC108) ✓
 INSERT INTO cita VALUES(seq_cita.NEXTVAL, 6,  8, SYSDATE-1,'Escaneo general',    'CANCELADA');
+
+/* =========================================================
+   AJUSTE FINAL DE STOCK
+   Se aplican las transacciones registradas anteriormente para
+   que repuesto.stock refleje el inventario real actual:
+     stock_final = stock_inicial + entradas(compras) - salidas(ordenes)
+   ========================================================= */
+
+-- Sumar cantidades recibidas de proveedores
+UPDATE repuesto r
+SET    stock = stock + (
+    SELECT NVL(SUM(dc.cantidad), 0)
+    FROM   detalle_compra dc
+    WHERE  dc.id_repuesto = r.id_repuesto
+);
+
+-- Restar cantidades consumidas en ordenes de servicio
+UPDATE repuesto r
+SET    stock = stock - (
+    SELECT NVL(SUM(dr.cantidad), 0)
+    FROM   detalle_repuesto dr
+    WHERE  dr.id_repuesto = r.id_repuesto
+);
 
 COMMIT;
