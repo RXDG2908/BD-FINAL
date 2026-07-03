@@ -2,7 +2,7 @@
 
 [← Volver al índice](../README.md)
 
-`06_inserts.sql` carga un dataset **completamente enlazado y cuadrado**: cada FK apunta a un registro existente, cada factura suma exactamente sus detalles, y el stock refleja las compras y consumos registrados. La consistencia se puede comprobar en cualquier momento con `08_verificacion.sql` (ver [Verificación](06_verificacion.md)).
+`06_inserts.sql` carga un dataset **completamente enlazado y cuadrado**: cada FK apunta a un registro existente, cada factura suma exactamente sus detalles, y el stock refleja las compras y consumos registrados. Estos datos alimentan la demo de [Casos de Procesos](06_casos_procesos.md) (`08_casos_procesos.sql`).
 
 ## Volumen de datos
 
@@ -46,4 +46,4 @@ Cada procedimiento y vista tiene datos que garantizan su ejecución:
 - Los subtotales de detalle usan el **precio de catálogo vigente**, igual que hacen los procedimientos al insertar.
 - Las facturas se numeran `F001-xxxxx` en orden cronológico de emisión.
 
-> **Importante:** si agregas datos a mano, ejecuta después `08_verificacion.sql` para confirmar que no rompiste ningún enlace.
+> **Importante:** si agregas datos a mano, cuida que los montos sigan cuadrando (factura = detalles, stock = movimientos) y vuelve a correr `08_casos_procesos.sql` para confirmar que los procedimientos siguen funcionando.

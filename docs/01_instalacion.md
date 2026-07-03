@@ -46,11 +46,11 @@ Ejecutar **en este orden exacto** (cada script depende del anterior):
 -- 4. Compilar procedimientos almacenados
 @07_procedimientos.sql
 
--- 5. (Recomendado) Verificar que todo quedó consistente
-@08_verificacion.sql
+-- 5. (Demo) Probar los 16 procedimientos con datos reales
+@08_casos_procesos.sql
 ```
 
-Si `08_verificacion.sql` termina con `VERIFICACION COMPLETA: todos los datos cuadran.`, la base quedó correctamente instalada.
+Si `08_casos_procesos.sql` termina con `FIN: 16 procedimientos probados con exito`, la base quedó correctamente instalada y todos los procesos funcionan. Ver [Casos de Procesos](06_casos_procesos.md).
 
 ## Flujo de trabajo con Git
 

@@ -571,7 +571,7 @@ INSERT INTO cita VALUES(seq_cita.NEXTVAL, 7,20,SYSDATE+2,'Pintura parcial','CANC
    AJUSTE FINAL DE STOCK
    stock_final = stock_inicial + entradas(compras) - salidas(ordenes)
    Deja repuesto.stock cuadrado con detalle_compra y
-   detalle_repuesto (verificable con 08_verificacion.sql).
+   detalle_repuesto (estos datos alimentan 08_casos_procesos.sql).
    ========================================================= */
 
 -- Sumar cantidades recibidas de proveedores

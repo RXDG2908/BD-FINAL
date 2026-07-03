@@ -60,7 +60,7 @@ echo   Service   : xe
 echo ------------------------------------------------
 echo   Orden de ejecucion:
 echo   01 - 02 - 03 - 04 - 05 - 06 - 07 - 08
-echo   (08 verifica que todo quedo consistente)
+echo   (08 = casos de prueba de los procedimientos)
 echo ------------------------------------------------
 echo   Diagrama ER: abrir ER_AUTOFIX.md
 echo   y presionar Ctrl+Shift+V

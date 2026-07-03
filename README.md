@@ -11,7 +11,7 @@ Base de datos relacional desarrollada en **Oracle SQL + PL/SQL** para la gestió
 | [3. Vistas](docs/03_vistas.md) | Las 5 vistas de consulta y su escenario de datos |
 | [4. Procedimientos](docs/04_procedimientos.md) | Los 16 procedimientos almacenados con ejemplos de ejecución |
 | [5. Datos de prueba](docs/05_datos_prueba.md) | Volumen del dataset y escenarios preparados por procedimiento |
-| [6. Verificación](docs/06_verificacion.md) | Auditoría de integridad con `08_verificacion.sql` |
+| [6. Casos de Procesos](docs/06_casos_procesos.md) | Demostración ejecutable de los 16 procedimientos con datos y resultados esperados |
 | [Diagrama ER](ER_AUTOFIX.md) | Diagrama entidad-relación (Mermaid, `Ctrl+Shift+V` en VS Code) |
 
 ## 📂 Scripts SQL
@@ -25,7 +25,7 @@ Base de datos relacional desarrollada en **Oracle SQL + PL/SQL** para la gestió
 | `05_vistas.sql` | 5 vistas de consulta rápida |
 | `06_inserts.sql` | Datos de prueba enlazados y cuadrados (30 órdenes, 22 facturas…) |
 | `07_procedimientos.sql` | 16 procedimientos almacenados |
-| `08_verificacion.sql` | Auditoría de integridad: enlaces, montos y reglas de negocio |
+| `08_casos_procesos.sql` | Casos de prueba de los 16 procedimientos (demo para exposición) |
 
 ## 🚀 Inicio rápido
 
@@ -37,7 +37,7 @@ Base de datos relacional desarrollada en **Oracle SQL + PL/SQL** para la gestió
 @05_vistas.sql
 @06_inserts.sql
 @07_procedimientos.sql
-@08_verificacion.sql   -- debe terminar en "VERIFICACION COMPLETA"
+@08_casos_procesos.sql -- demo: prueba los 16 procedimientos con datos reales
 ```
 
 Detalles de conexión y configuración en [docs/01_instalacion.md](docs/01_instalacion.md).
