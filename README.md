@@ -107,3 +107,8 @@ proveedor ──< compra ──< detalle_compra >── repuesto
 - **Motor:** Oracle Database / SQL Developer
 - **Lenguaje:** SQL + PL/SQL
 - **Cursores:** `FOR`, `SYS_REFCURSOR`, `SELECT FOR UPDATE`
+
+---
+
+## Colaboradores
+- Johan-Salazar-Atencio
