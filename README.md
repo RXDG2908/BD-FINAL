@@ -1,9 +1,20 @@
 # BD-FINAL — Sistema de Gestión de Taller Mecánico AUTOFIX
-Base de datos relacional desarrollada en **Oracle SQL Developer** para la gestión de clientes, vehículos, servicios, repuestos, compras, facturación y agenda de un taller mecánico.
 
----
+Base de datos relacional desarrollada en **Oracle SQL + PL/SQL** para la gestión de clientes, vehículos, servicios, repuestos, compras, facturación y agenda de un taller mecánico.
 
-## Estructura del proyecto
+## 📚 Índice de documentación
+
+| Documento | Contenido |
+|---|---|
+| [1. Instalación](docs/01_instalacion.md) | Requisitos, SETUP.bat, conexión y orden de ejecución de scripts |
+| [2. Esquema](docs/02_esquema.md) | Las 15 tablas, relaciones, reglas de integridad, secuencias e índices |
+| [3. Vistas](docs/03_vistas.md) | Las 5 vistas de consulta y su escenario de datos |
+| [4. Procedimientos](docs/04_procedimientos.md) | Los 16 procedimientos almacenados con ejemplos de ejecución |
+| [5. Datos de prueba](docs/05_datos_prueba.md) | Volumen del dataset y escenarios preparados por procedimiento |
+| [6. Verificación](docs/06_verificacion.md) | Auditoría de integridad con `08_verificacion.sql` |
+| [Diagrama ER](ER_AUTOFIX.md) | Diagrama entidad-relación (Mermaid, `Ctrl+Shift+V` en VS Code) |
+
+## 📂 Scripts SQL
 
 | Archivo | Contenido |
 |---|---|
@@ -12,103 +23,27 @@ Base de datos relacional desarrollada en **Oracle SQL Developer** para la gesti�
 | `03_tablas.sql` | Definición de las 15 tablas del esquema |
 | `04_indices.sql` | 16 índices para optimizar consultas |
 | `05_vistas.sql` | 5 vistas de consulta rápida |
-| `06_inserts.sql` | Datos de prueba (15 clientes, 20 vehículos, 6 mecánicos…) |
+| `06_inserts.sql` | Datos de prueba enlazados y cuadrados (30 órdenes, 22 facturas…) |
 | `07_procedimientos.sql` | 16 procedimientos almacenados |
+| `08_verificacion.sql` | Auditoría de integridad: enlaces, montos y reglas de negocio |
 
----
-
-## Esquema de tablas (15)
-
-```
-cargo ──< mecanico ──< orden_servicio ──< detalle_servicio >── servicio
-                  └──< orden_servicio ──< detalle_repuesto >── repuesto
-cliente ──< vehiculo ──< orden_servicio ──< factura ──< pago
-                   └──< cita >── cliente
-proveedor ──< compra ──< detalle_compra >── repuesto
-```
-
-| # | Tabla | Descripción |
-|---|---|---|
-| 1 | `cargo` | Cargos laborales: Junior, Senior, Especialista, Jefe de Taller |
-| 2 | `cliente` | Datos del cliente (nombre, teléfono, dirección) |
-| 3 | `mecanico` | Mecánicos con especialidad y cargo asignado |
-| 4 | `servicio` | Catálogo de servicios con precio |
-| 5 | `repuesto` | Inventario de repuestos con stock mínimo |
-| 6 | `vehiculo` | Vehículos registrados, vinculados a un cliente |
-| 7 | `proveedor` | Empresas que suministran los repuestos |
-| 8 | `compra` | Órdenes de compra emitidas a proveedores |
-| 9 | `detalle_compra` | Líneas de cada orden de compra |
-| 10 | `orden_servicio` | Cabecera de cada orden (fecha ingreso, fecha cierre, estado) |
-| 11 | `detalle_servicio` | Servicios aplicados a una orden |
-| 12 | `detalle_repuesto` | Repuestos utilizados en una orden |
-| 13 | `factura` | Documento fiscal emitido al cerrar una orden (incluye IGV) |
-| 14 | `pago` | Pagos registrados contra una factura (admite abonos) |
-| 15 | `cita` | Agenda de turnos solicitados por el cliente |
-
----
-
-## Vistas (5)
-
-| Vista | Descripción |
-|---|---|
-| `v_ordenes_abiertas` | Órdenes activas con vehículo y mecánico asignado |
-| `v_repuestos_stock_bajo` | Repuestos por debajo del stock mínimo |
-| `v_clientes_frecuentes` | Clientes con 2 o más órdenes de servicio |
-| `v_citas_pendientes` | Agenda de citas próximas (PENDIENTE o CONFIRMADA) |
-| `v_facturas_por_cobrar` | Facturas con saldo pendiente de pago |
-
----
-
-## Procedimientos almacenados (16)
-
-| Procedimiento | Descripción |
-|---|---|
-| `sp_registrar_cliente` | Inserta un nuevo cliente |
-| `sp_registrar_vehiculo` | Registra un vehículo validando que el cliente exista |
-| `sp_abrir_orden` | Crea una orden con su primer servicio (límite: 3 órdenes abiertas por mecánico) |
-| `sp_agregar_servicio` | Agrega un servicio adicional a una orden abierta |
-| `sp_agregar_repuestos` | Agrega un repuesto, valida stock y descuenta inventario |
-| `sp_calcular_orden` | Calcula el total de una orden (servicios + repuestos) |
-| `sp_cerrar_orden` | Cierra la orden, registra `fecha_cierre` y calcula el total |
-| `sp_cierre_del_dia` | Suma el total facturado en una fecha por `fecha_cierre` |
-| `sp_validar_stock` | Verifica disponibilidad de un repuesto |
-| `sp_historial_vehiculo` | Devuelve el historial de órdenes de un vehículo (SYS_REFCURSOR) |
-| `sp_listar_reposicion` | Lista repuestos a reponer ordenados por urgencia (SYS_REFCURSOR) |
-| `sp_reporte_servicios_top` | Ranking de los N servicios más solicitados (SYS_REFCURSOR) |
-| `sp_reporte_mecanicos` | Desempeño de mecánicos: órdenes e ingresos (SYS_REFCURSOR) |
-| `sp_actualizar_precios` | Aplica un % de ajuste a todos los precios del catálogo |
-| `sp_clientes_frecuentes` | Clientes con N o más órdenes (SYS_REFCURSOR) |
-| `sp_consumo_repuestos` | Total de unidades de repuestos consumidas |
-
----
-
-## Orden de ejecución
+## 🚀 Inicio rápido
 
 ```sql
--- 1. Limpiar esquema anterior
 @01_eliminar_tablas.sql
-
--- 2. Crear estructura
 @02_secuencias.sql
 @03_tablas.sql
 @04_indices.sql
 @05_vistas.sql
-
--- 3. Cargar datos de prueba
 @06_inserts.sql
-
--- 4. Compilar procedimientos
 @07_procedimientos.sql
+@08_verificacion.sql   -- debe terminar en "VERIFICACION COMPLETA"
 ```
 
----
+Detalles de conexión y configuración en [docs/01_instalacion.md](docs/01_instalacion.md).
 
-## Tecnología
+## 🛠 Tecnología
+
 - **Motor:** Oracle Database / SQL Developer
 - **Lenguaje:** SQL + PL/SQL
 - **Cursores:** `FOR`, `SYS_REFCURSOR`, `SELECT FOR UPDATE`
-
----
-
-## Colaboradores
-- Johan-Salazar-Atencio
